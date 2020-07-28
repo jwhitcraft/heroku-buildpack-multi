@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+[ "$BUILDPACK_XTRACE" ] && set -o xtrace
+
 if [ -e $1/last_pack_release.out ]; then
   cat $1/last_pack_release.out
   rm $1/last_pack_release.out

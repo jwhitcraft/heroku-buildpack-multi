@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+[ "$BUILDPACK_XTRACE" ] && set -o xtrace
+
 if [ -f $1/.buildpacks ]; then
   echo "Multipack"
   exit 0
