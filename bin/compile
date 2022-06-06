@@ -6,6 +6,25 @@ set -e
 
 unset GIT_DIR
 
+
+suppress_output() {
+  local TMP_COMMAND_OUTPUT
+  TMP_COMMAND_OUTPUT=$(mktemp "/tmp/buildpack-${FUNCNAME[0]}.XXXXXX")
+  trap "rm -rf '$TMP_COMMAND_OUTPUT' >/dev/null" RETURN
+
+  "$@" >"$TMP_COMMAND_OUTPUT" 2>&1 || {
+    local exit_code="$?"
+    cat "$TMP_COMMAND_OUTPUT"
+    return "$exit_code"
+  }
+
+  if [ "$BUILDPACK_XTRACE" ]; then
+    cat "$TMP_COMMAND_OUTPUT"
+  fi
+
+  return 0
+}
+
 for BUILDPACK in $(cat $1/.buildpacks); do
   dir=$(mktemp -t buildpackXXXXX)
   rm -rf $dir
@@ -22,14 +41,14 @@ for BUILDPACK in $(cat $1/.buildpacks); do
 
     if [[ "$url" =~ \.tgz$ ]] || [[ "$url" =~ \.tgz\? ]]; then
       mkdir -p "$dir"
-      curl -s "$url" | tar xvz -C "$dir" >/dev/null 2>&1
+      curl -s "$url" | suppress_output tar xvz -C "$dir"
     else
-      git clone $url $dir >/dev/null 2>&1
+      suppress_output git clone $url $dir
     fi
     cd $dir
 
     if [ "$branch" != "" ]; then
-      git checkout $branch >/dev/null 2>&1
+      suppress_output git checkout $branch
     fi
 
     # we'll get errors later if these are needed and don't exist
