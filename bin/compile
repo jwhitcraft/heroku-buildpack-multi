@@ -25,35 +25,11 @@ suppress_output() {
 }
 
 for BUILDPACK in $(cat $1/.buildpacks); do
-  dir=$(mktemp -t buildpackXXXXX)
-  rm -rf $dir
+  # for our use case, the buildpacks are already in the right place /tmp/buildpacks
+  if [ -d "/tmp/buildpacks${BUILDPACK}" ]; then
+    dir="/tmp/buildpacks${BUILDPACK}"
 
-  url=${BUILDPACK%#*}
-  branch=${BUILDPACK#*#}
-
-  if [ "$branch" == "$url" ]; then
-    branch=""
-  fi
-
-  if [ "$url" != "" ]; then
-    if [[ -n "$branch" ]]; then
-      echo "=====> Downloading Buildpack: ${BUILDPACK}@${branch}"
-    else
-      echo "=====> Downloading Buildpack: ${BUILDPACK}"
-    fi
-
-    if [[ "$url" =~ \.tgz$ ]] || [[ "$url" =~ \.tgz\? ]]; then
-      mkdir -p "$dir"
-      curl -s "$url" | suppress_output tar xvz -C "$dir"
-    else
-      suppress_output git clone $url $dir
-    fi
     cd $dir
-
-    if [ "$branch" != "" ]; then
-      suppress_output git checkout $branch
-    fi
-
     # we'll get errors later if these are needed and don't exist
     chmod -f +x $dir/bin/{detect,compile,release} || true
 
