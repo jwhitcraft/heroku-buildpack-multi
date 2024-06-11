@@ -26,8 +26,9 @@ suppress_output() {
 
 for BUILDPACK in $(cat $1/.buildpacks); do
   # for our use case, the buildpacks are already in the right place /tmp/buildpacks
-  if [ -d "/tmp/buildpacks${BUILDPACK}" ]; then
-    dir="/tmp/buildpacks${BUILDPACK}"
+  if [ -d "/tmp/buildpacks/${BUILDPACK}" ]; then
+    echo "-----> Testing buildpack $BUILDPACK"
+    dir="/tmp/buildpacks/${BUILDPACK}"
 
     cd $dir
     # we'll get errors later if these are needed and don't exist
